@@ -3,9 +3,7 @@
 </template>
 <script>
 /* eslint-disable */
-// import openlayer css for style
 import "ol/ol.css";
-// This is library of openlayer for handle map
 import Map from "ol/Map";
 import View from "ol/View";
 import { defaults as defaultControls, ScaleLine } from "ol/control";
