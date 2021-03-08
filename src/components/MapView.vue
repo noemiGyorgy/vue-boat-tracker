@@ -14,8 +14,10 @@ export default {
   async mounted() {
     await this.initiateMap();
   },
+  props: ["positions"],
   methods: {
     initiateMap() {
+      console.log(this.positions)
       var source = new VectorSource();
       var vector = new VectorLayer({
         source: source

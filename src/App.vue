@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <MapView />
+    <MapView :positions="positions"/>
   </div>
 </template>
 
@@ -26,8 +26,8 @@ export default {
     getLivePosition() {
       socket.on("position", message => {
         let newPositions = this.positions;
-      newPositions.push(message);
-      this.positions = newPositions;
+        newPositions.push(message);
+        this.positions = newPositions;
       })
     }
   }
