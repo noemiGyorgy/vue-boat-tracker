@@ -1,48 +1,52 @@
 <template>
-    <div id="map"></div>
+  <div id="map"></div>
 </template>
-<script>
-/* eslint-disable */
+
+<script lang="ts">
+import Vue from "vue";
+import Component from "vue-class-component";
 import "ol/ol.css";
-import Map from "ol/Map";
+import Map from "ol/Map.js";
 import View from "ol/View";
 import { defaults as defaultControls, ScaleLine } from "ol/control";
-import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
-import {OSM, Vector as VectorSource} from 'ol/source';
-export default {
-  name: 'MapView',
+import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
+import { OSM, Vector as VectorSource } from "ol/source";
+import { Prop } from "vue-property-decorator";
+
+@Component({})
+export default class MapView extends Vue {
+  @Prop() readonly positions!: Array<object>;
+
+  initiateMap() {
+    console.log(this.positions);
+    const source = new VectorSource();
+    const vector = new VectorLayer({
+      source: source
+    });
+    const raster = new TileLayer({
+      source: new OSM()
+    });
+    const map = new Map({
+      controls: defaultControls().extend([
+        new ScaleLine({
+          units: "degrees"
+        })
+      ]),
+      target: "map",
+      layers: [raster, vector],
+      view: new View({
+        center: [0, 0],
+        zoom: 1
+      })
+    });
+  }
   async mounted() {
     await this.initiateMap();
-  },
-  props: ["positions"],
-  methods: {
-    initiateMap() {
-      console.log(this.positions)
-      var source = new VectorSource();
-      var vector = new VectorLayer({
-        source: source
-      });
-      var raster = new TileLayer({
-        source: new OSM(),
-      });
-      var map = new Map({
-        controls: defaultControls().extend([
-          new ScaleLine({
-            units: "degrees",
-          }),
-        ]),
-        target: "map",
-        layers: [raster, vector],
-        view: new View({
-          center: [0, 0],
-          zoom: 1,
-        }),
-      });
-    },
-  },
-};
+  }
+}
 </script>
-<style>
+
+<style lang="scss" scoped>
 #map {
   position: absolute;
   z-index: 0 !important;

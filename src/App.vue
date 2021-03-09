@@ -1,40 +1,39 @@
 <template>
   <div id="app">
-    <MapView :positions="positions"/>
+    <MapView :positions="positions" />
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
 import io from "socket.io-client";
-import MapView from './components/MapView.vue';
-const socket = io.connect("http://localhost:4000");
+import MapView from "./components/MapView.vue";
 
-export default {
-  name: 'App',
-  data() {
-    return {
-      positions: []
-    }
-  },
+@Component({
   components: {
     MapView
-  },
+  }
+})
+export default class App extends Vue {
+  private server: string =
+    process.env.VUE_APP_SERVER || "http://localhost:4000";
+  private socket = io.connect(this.server);
+
+  private positions: Array<object> = [];
+  getLivePosition() {
+    this.socket.on("position", (message: object) => {
+      const newPositions = this.positions;
+      newPositions.push(message);
+      this.positions = newPositions;
+    });
+  }
   created() {
-    this.getLivePosition()
-  },
-  methods: {
-    getLivePosition() {
-      socket.on("position", message => {
-        let newPositions = this.positions;
-        newPositions.push(message);
-        this.positions = newPositions;
-      })
-    }
+    this.getLivePosition();
   }
 }
 </script>
 
-<style>
+<style lang="scss">
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
