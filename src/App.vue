@@ -33,6 +33,9 @@ export default class App extends Vue {
       tracksStore.setTracks(tracks);
       alert("End of the journey.");
     });
+    this.socket.on("stopped", (stopped: boolean) => {
+      tracksStore.setStopped(stopped);
+    });
   }
   created() {
     this.getLivePosition();
