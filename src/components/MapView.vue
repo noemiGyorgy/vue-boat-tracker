@@ -20,7 +20,6 @@ export default class MapView extends Vue {
   private map: Map;
 
   initiateMap() {
-    console.log(this.positions);
     const source = new VectorSource();
     const vector = new VectorLayer({
       source: source
@@ -53,7 +52,6 @@ export default class MapView extends Vue {
   @Watch("getPositions")
   changePositions() {
     this.positions = tracksStore._positions;
-    console.log(this.positions);
   }
 }
 </script>

@@ -21,6 +21,11 @@ export default class App extends Vue {
   private socket = io.connect(this.server);
 
   getLivePosition() {
+    this.socket.on("connection", (message: any) => {
+      console.log("Connected to the server.");
+      tracksStore.setTracks(message.tracks);
+      tracksStore.setStopped(message.stopped);
+    });
     this.socket.on("position", (position: object) => {
       tracksStore.updatePositions(position);
     });
