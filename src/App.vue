@@ -29,6 +29,10 @@ export default class App extends Vue {
     this.socket.on("position", (position: object) => {
       tracksStore.updatePositions(position);
     });
+    this.socket.on("endOfTrack", (tracks: Array<object>) => {
+      tracksStore.setTracks(tracks);
+      alert("End of the journey.");
+    });
   }
   created() {
     this.getLivePosition();
