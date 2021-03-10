@@ -1,48 +1,62 @@
 <template>
-    <div id="map"></div>
+  <div id="map"></div>
 </template>
-<script>
-/* eslint-disable */
-// import openlayer css for style
+
+<script lang="ts">
+import Vue from "vue";
+import Component from "vue-class-component";
 import "ol/ol.css";
-// This is library of openlayer for handle map
-import Map from "ol/Map";
+import Map from "ol/Map.js";
 import View from "ol/View";
 import { defaults as defaultControls, ScaleLine } from "ol/control";
-import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
-import {OSM, Vector as VectorSource} from 'ol/source';
-export default {
-  name: 'MapView',
+import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
+import { OSM, Vector as VectorSource } from "ol/source";
+import { tracksStore } from "../store/modules/tracks";
+import { Watch } from "vue-property-decorator";
+
+@Component({})
+export default class MapView extends Vue {
+  private positions: Array<object> = tracksStore._positions;
+  private map: Map;
+
+  initiateMap() {
+    const source = new VectorSource();
+    const vector = new VectorLayer({
+      source: source
+    });
+    const raster = new TileLayer({
+      source: new OSM()
+    });
+    this.map = new Map({
+      controls: defaultControls().extend([
+        new ScaleLine({
+          units: "degrees"
+        })
+      ]),
+      target: "map",
+      layers: [raster, vector],
+      view: new View({
+        center: [0, 0],
+        zoom: 1
+      })
+    });
+  }
   async mounted() {
     await this.initiateMap();
-  },
-  methods: {
-    initiateMap() {
-      var source = new VectorSource();
-      var vector = new VectorLayer({
-        source: source
-      });
-      var raster = new TileLayer({
-        source: new OSM(),
-      });
-      var map = new Map({
-        controls: defaultControls().extend([
-          new ScaleLine({
-            units: "degrees",
-          }),
-        ]),
-        target: "map",
-        layers: [raster, vector],
-        view: new View({
-          center: [0, 0],
-          zoom: 1,
-        }),
-      });
-    },
-  },
-};
+  }
+
+  get getPositions() {
+    return tracksStore._positions;
+  }
+
+  @Watch("getPositions")
+  changePositions() {
+    this.positions = tracksStore._positions;
+  }
+}
 </script>
-<style>
+
+<style lang="scss" scoped>
 #map {
   position: absolute;
   z-index: 0 !important;
