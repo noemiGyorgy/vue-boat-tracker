@@ -11,11 +11,13 @@ import View from "ol/View";
 import { defaults as defaultControls, ScaleLine } from "ol/control";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import { OSM, Vector as VectorSource } from "ol/source";
-import { Prop } from "vue-property-decorator";
+import { tracksStore } from "../store/modules/tracks";
+import { Watch } from "vue-property-decorator";
 
 @Component({})
 export default class MapView extends Vue {
-  @Prop() readonly positions!: Array<object>;
+  private positions: Array<object> = tracksStore._positions;
+  private map: Map;
 
   initiateMap() {
     console.log(this.positions);
@@ -26,7 +28,7 @@ export default class MapView extends Vue {
     const raster = new TileLayer({
       source: new OSM()
     });
-    const map = new Map({
+    this.map = new Map({
       controls: defaultControls().extend([
         new ScaleLine({
           units: "degrees"
@@ -42,6 +44,16 @@ export default class MapView extends Vue {
   }
   async mounted() {
     await this.initiateMap();
+  }
+
+  get getPositions() {
+    return tracksStore._positions;
+  }
+
+  @Watch("getPositions")
+  changePositions() {
+    this.positions = tracksStore._positions;
+    console.log(this.positions);
   }
 }
 </script>

@@ -1,11 +1,12 @@
 <template>
   <div id="app">
-    <MapView :positions="positions" />
+    <MapView />
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import { tracksStore } from "./store/modules/tracks";
 import io from "socket.io-client";
 import MapView from "./components/MapView.vue";
 
@@ -19,12 +20,9 @@ export default class App extends Vue {
     process.env.VUE_APP_SERVER || "http://localhost:4000";
   private socket = io.connect(this.server);
 
-  private positions: Array<object> = [];
   getLivePosition() {
-    this.socket.on("position", (message: object) => {
-      const newPositions = this.positions;
-      newPositions.push(message);
-      this.positions = newPositions;
+    this.socket.on("position", (position: object) => {
+      tracksStore.updatePositions(position);
     });
   }
   created() {
