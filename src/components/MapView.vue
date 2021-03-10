@@ -41,8 +41,8 @@ export default class MapView extends Vue {
       })
     });
   }
-  async mounted() {
-    await this.initiateMap();
+  mounted() {
+    this.initiateMap();
   }
 
   get getPositions() {
