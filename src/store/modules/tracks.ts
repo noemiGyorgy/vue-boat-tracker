@@ -1,23 +1,29 @@
 import { Module, Mutation, Action } from "vuex-class-modules";
 import { VuexModule } from "vuex-class-modules";
-
+import Vector from "ol/layer/Vector";
 import { store } from "@/store";
+import Position from "@/interfaces/Position";
+import VectorSource from "ol/source/Vector";
 
 @Module
 class TracksStore extends VuexModule {
-  public _positions: Array<object> = [];
+  public _positions: Array<Position> = [];
   public _tracks: Array<object> = [];
   public _stopped = false;
-  public _features: { [key: string]: any } = {};
+  public _layers: { [key: string]: Vector } = {};
+
+  get vectors(): Array<Vector> {
+    return Object.values(this._layers);
+  }
 
   @Mutation
-  public setPositions(newPositions: Array<object>): void {
+  public setPositions(newPositions: Array<Position>): void {
     this._positions = newPositions;
   }
 
   @Mutation
-  public setFeatures(newFeatures: object): void {
-    this._features = newFeatures;
+  public setLayers(newLayers: { [key: string]: Vector }): void {
+    this._layers = newLayers;
   }
 
   @Mutation
@@ -31,22 +37,36 @@ class TracksStore extends VuexModule {
   }
 
   @Action
-  public async updatePositions(position: object): Promise<void> {
+  public async updatePositions(position: Position): Promise<void> {
     const newPositions = [...this._positions];
     newPositions.push(position);
     this.setPositions(newPositions);
   }
 
   @Action
-  public async updateFeatures(lineFeature: {
+  public async updateLayers(lineFeature: {
     [key: string]: any;
   }): Promise<void> {
-    const newFeatures = { ...this._features };
-    if (newFeatures[lineFeature.start] === undefined) {
-      newFeatures[lineFeature.start] = [];
+    const newLayers = Object.assign({}, this._layers);
+
+    if (newLayers[lineFeature.start] === undefined) {
+      const line = new Vector({
+        source: new VectorSource({
+          features: [lineFeature.newFeature],
+          useSpatialIndex: false,
+        }),
+        visible: true,
+      });
+      newLayers[lineFeature.start] = line;
+    } else {
+      const line = newLayers[lineFeature.start];
+      line
+        .getSource()
+        .getFeaturesCollection()
+        .push(lineFeature.newFeature);
     }
-    newFeatures[lineFeature.start].push(lineFeature.newFeature);
-    this.setFeatures(newFeatures);
+
+    this.setLayers(newLayers);
   }
 }
 export const tracksStore = new TracksStore({ store, name: "tracks" });
