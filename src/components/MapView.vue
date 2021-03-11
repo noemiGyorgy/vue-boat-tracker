@@ -129,7 +129,7 @@ export default class MapView extends Vue {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 #map {
   position: absolute;
   z-index: 0 !important;
