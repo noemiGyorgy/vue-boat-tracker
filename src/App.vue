@@ -9,6 +9,7 @@ import { Component, Vue } from "vue-property-decorator";
 import { tracksStore } from "./store/modules/tracks";
 import io from "socket.io-client";
 import MapView from "./components/MapView.vue";
+import Position from "./interfaces/Position";
 
 @Component({
   components: {
@@ -26,7 +27,7 @@ export default class App extends Vue {
       tracksStore.setTracks(message.tracks);
       tracksStore.setStopped(message.stopped);
     });
-    this.socket.on("position", (position: object) => {
+    this.socket.on("position", (position: Position) => {
       tracksStore.updatePositions(position);
     });
     this.socket.on("endOfTrack", (tracks: Array<object>) => {
