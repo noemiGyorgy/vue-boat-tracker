@@ -15,7 +15,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { tracksStore } from "../store/modules/tracks";
+import { tracksStore } from "../../../store/modules/tracks";
 import axios from "axios";
 
 @Component({})

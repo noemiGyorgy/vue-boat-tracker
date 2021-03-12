@@ -9,8 +9,8 @@
 import { Component, Vue } from "vue-property-decorator";
 import { tracksStore } from "./store/modules/tracks";
 import io from "socket.io-client";
-import MapView from "./components/MapView.vue";
-import Sidebar from "./components/Sidebar.vue";
+import MapView from "./components/map/MapView.vue";
+import Sidebar from "./components/sidebar/Sidebar.vue";
 import Position from "./interfaces/Position";
 
 @Component({
