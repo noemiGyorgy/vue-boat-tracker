@@ -20,15 +20,23 @@ export default class ListItem extends Vue {
   private activeItem = "";
 
   handleClick() {
-    //if (this.start in Object.keys(tracksStore._layers && !tracksStore._tracks[this.trackId].live))
-    axios
-      .get(process.env.VUE_APP_SERVER + "/track/" + this.trackId, {
-        withCredentials: true
-      })
-      .then(response => {
-        tracksStore.updateRecordedPositions(response.data);
-        console.log(response);
-      });
+    if (
+      this.start in
+      Object.keys(
+        tracksStore._layers && !tracksStore._tracks[this.trackId].live
+      )
+    ) {
+      tracksStore._layers[this.start].setVisible(false);
+    } else {
+      axios
+        .get(process.env.VUE_APP_SERVER + "/track/" + this.trackId, {
+          withCredentials: true
+        })
+        .then(response => {
+          tracksStore.updateRecordedPositions(response.data);
+          tracksStore.setFocus(this.start);
+        });
+    }
   }
 }
 </script>

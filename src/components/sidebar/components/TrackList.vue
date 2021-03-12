@@ -27,7 +27,7 @@ export default class TrackList extends Vue {
   @Watch("storeTracks")
   changeTracks() {
     this.tracks = tracksStore._tracks;
-    console.log(tracksStore._tracks)
+    console.log(tracksStore._tracks);
   }
 }
 </script>

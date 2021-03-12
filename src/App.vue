@@ -25,7 +25,7 @@ export default class App extends Vue {
     process.env.VUE_APP_SERVER || "http://localhost:4000";
   private socket = io.connect(this.server);
 
-  getLivePosition() {
+  recieveMessages() {
     this.socket.on("connection", (message: any) => {
       console.log("Connected to the server.");
       tracksStore.setTracks(message.tracks);
@@ -43,7 +43,7 @@ export default class App extends Vue {
     });
   }
   created() {
-    this.getLivePosition();
+    this.recieveMessages();
   }
 }
 </script>

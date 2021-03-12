@@ -9,10 +9,11 @@ import VectorSource from "ol/source/Vector";
 @Module
 class TracksStore extends VuexModule {
   public _positions: Array<Position> = [];
-  public _tracks: { [key: number]: Track } = {};
-  public _stopped = false;
-  public _layers: { [key: string]: Vector } = {};
   public _recordedPositions: { [key: string]: Array<Position> } = {};
+  public _layers: { [key: string]: Vector } = {};
+  public _tracks: { [key: string]: Track } = {};
+  public _stopped = false;
+  public _focus = "";
 
   get stopped(): boolean {
     return this._stopped;
@@ -28,12 +29,19 @@ class TracksStore extends VuexModule {
   }
 
   @Mutation
+  public setRecordedPositions(newRecordedPositions: {
+    [key: string]: Array<Position>;
+  }): void {
+    this._recordedPositions = newRecordedPositions;
+  }
+
+  @Mutation
   public setLayers(newLayers: { [key: string]: Vector }): void {
     this._layers = newLayers;
   }
 
   @Mutation
-  public setTracks(newTracks: { [key: number]: Track }): void {
+  public setTracks(newTracks: { [key: string]: Track }): void {
     this._tracks = newTracks;
     console.log(this._tracks);
   }
@@ -44,10 +52,8 @@ class TracksStore extends VuexModule {
   }
 
   @Mutation
-  public setRecordedPositions(newRecordedPositions: {
-    [key: string]: Array<Position>;
-  }): void {
-    this._recordedPositions = newRecordedPositions;
+  public setFocus(newFocus: string): void {
+    this._focus = newFocus;
   }
 
   @Action
@@ -55,6 +61,13 @@ class TracksStore extends VuexModule {
     const newPositions = [...this._positions];
     newPositions.push(position);
     this.setPositions(newPositions);
+  }
+
+  @Action
+  public async updateRecordedPositions(track: Array<Position>): Promise<void> {
+    const newRecordedPositions = Object.assign({}, this._recordedPositions);
+    newRecordedPositions[track[0].start] = track;
+    this.setRecordedPositions(newRecordedPositions);
   }
 
   @Action
@@ -81,13 +94,6 @@ class TracksStore extends VuexModule {
     }
 
     this.setLayers(newLayers);
-  }
-
-  @Action
-  public async updateRecordedPositions(track: Array<Position>): Promise<void> {
-    const newRecordedPositions = Object.assign({}, this._recordedPositions);
-    newRecordedPositions[track[0].start] = track;
-    this.setRecordedPositions(newRecordedPositions);
   }
 }
 export const tracksStore = new TracksStore({ store, name: "tracks" });
