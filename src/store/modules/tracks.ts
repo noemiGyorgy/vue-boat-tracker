@@ -11,6 +11,7 @@ class TracksStore extends VuexModule {
   public _tracks: Array<object> = [];
   public _stopped = false;
   public _layers: { [key: string]: Vector } = {};
+  public _recordedPositions: { [key: string]: Array<Position> } = {};
 
   get stopped(): boolean {
     return this._stopped;
@@ -40,6 +41,13 @@ class TracksStore extends VuexModule {
     this._stopped = newStopped;
   }
 
+  @Mutation
+  public setRecordedPositions(newRecordedPositions: {
+    [key: string]: Array<Position>;
+  }): void {
+    this._recordedPositions = newRecordedPositions;
+  }
+
   @Action
   public async updatePositions(position: Position): Promise<void> {
     const newPositions = [...this._positions];
@@ -57,9 +65,9 @@ class TracksStore extends VuexModule {
       const line = new Vector({
         source: new VectorSource({
           features: [lineFeature.newFeature],
-          useSpatialIndex: false,
+          useSpatialIndex: false
         }),
-        visible: true,
+        visible: true
       });
       newLayers[lineFeature.start] = line;
     } else {
@@ -71,6 +79,13 @@ class TracksStore extends VuexModule {
     }
 
     this.setLayers(newLayers);
+  }
+
+  @Action
+  public async updateRecordedPositions(track: Array<Position>): Promise<void> {
+    const newRecordedPositions = Object.assign({}, this._recordedPositions);
+    newRecordedPositions[track[0].start] = track;
+    this.setRecordedPositions(newRecordedPositions);
   }
 }
 export const tracksStore = new TracksStore({ store, name: "tracks" });

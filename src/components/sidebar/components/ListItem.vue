@@ -6,6 +6,8 @@
 </template>
 
 <script lang="ts">
+import { tracksStore } from "@/store/modules/tracks";
+import axios from "axios";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
@@ -18,7 +20,14 @@ export default class ListItem extends Vue {
   private activeItem = "";
 
   handleClick() {
-    console.log(this.start);
+    axios
+      .get(process.env.VUE_APP_SERVER + "/track/" + this.trackId, {
+        withCredentials: true
+      })
+      .then(response => {
+        tracksStore.updateRecordedPositions(response.data);
+        console.log(tracksStore._recordedPositions[this.start][0].track_id);
+      });
   }
 }
 </script>

@@ -25,6 +25,7 @@ import LayerGroup from "ol/layer/Group";
 export default class MapView extends Vue {
   private positions: Array<Position> = tracksStore._positions;
   private trackLayers: Array<Vector> = tracksStore.vectors;
+  private focus = "liveTrack";
   private raster: TileLayer = new TileLayer({
     source: new OSM()
   });
@@ -101,9 +102,11 @@ export default class MapView extends Vue {
         newFeature: newFeature
       })
       .then(() => {
-        this.map
-          .getView()
-          .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
+        if (this.focus === pos[0].start) {
+          this.map
+            .getView()
+            .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
+        }
       });
   }
 
@@ -115,6 +118,9 @@ export default class MapView extends Vue {
       this.positions.length > 1 &&
       this.map !== undefined
     ) {
+      if (this.focus === "liveTrack") {
+        this.focus = this.positions[0].start;
+      }
       this.createLine(this.positions);
     }
   }
