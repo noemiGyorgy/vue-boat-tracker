@@ -2,13 +2,14 @@ import { Module, Mutation, Action } from "vuex-class-modules";
 import { VuexModule } from "vuex-class-modules";
 import Vector from "ol/layer/Vector";
 import { store } from "@/store";
+import Track from "@/interfaces/Track";
 import Position from "@/interfaces/Position";
 import VectorSource from "ol/source/Vector";
 
 @Module
 class TracksStore extends VuexModule {
   public _positions: Array<Position> = [];
-  public _tracks: Array<object> = [];
+  public _tracks: { [key: number]: Track } = {};
   public _stopped = false;
   public _layers: { [key: string]: Vector } = {};
   public _recordedPositions: { [key: string]: Array<Position> } = {};
@@ -32,8 +33,9 @@ class TracksStore extends VuexModule {
   }
 
   @Mutation
-  public setTracks(newTracks: Array<object>): void {
+  public setTracks(newTracks: { [key: number]: Track }): void {
     this._tracks = newTracks;
+    console.log(this._tracks);
   }
 
   @Mutation

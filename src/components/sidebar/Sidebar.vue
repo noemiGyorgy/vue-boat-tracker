@@ -34,7 +34,8 @@ import { Watch } from "vue-property-decorator";
 export default class Sidebar extends Vue {
   private url_upload: string =
     process.env.VUE_APP_UPLOAD || "http://localhost:5000";
-  private isTrack = tracksStore._tracks && tracksStore._tracks.length > 0;
+  private isTrack =
+    tracksStore._tracks && Object.keys(tracksStore._tracks).length > 0;
 
   get storeTracks() {
     return tracksStore._tracks;
@@ -42,7 +43,8 @@ export default class Sidebar extends Vue {
 
   @Watch("storeTracks")
   changeTracks() {
-    this.isTrack = tracksStore._tracks && tracksStore._tracks.length > 0;
+    this.isTrack =
+      tracksStore._tracks && Object.keys(tracksStore._tracks).length > 0;
   }
 }
 </script>

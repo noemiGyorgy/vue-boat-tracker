@@ -20,13 +20,14 @@ export default class ListItem extends Vue {
   private activeItem = "";
 
   handleClick() {
+    //if (this.start in Object.keys(tracksStore._layers && !tracksStore._tracks[this.trackId].live))
     axios
       .get(process.env.VUE_APP_SERVER + "/track/" + this.trackId, {
         withCredentials: true
       })
       .then(response => {
         tracksStore.updateRecordedPositions(response.data);
-        console.log(tracksStore._recordedPositions[this.start][0].track_id);
+        console.log(response);
       });
   }
 }

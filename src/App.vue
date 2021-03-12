@@ -11,6 +11,7 @@ import { tracksStore } from "./store/modules/tracks";
 import io from "socket.io-client";
 import MapView from "./components/map/MapView.vue";
 import Sidebar from "./components/sidebar/Sidebar.vue";
+import Track from "./interfaces/Track";
 import Position from "./interfaces/Position";
 
 @Component({
@@ -33,7 +34,7 @@ export default class App extends Vue {
     this.socket.on("position", (position: Position) => {
       tracksStore.updatePositions(position);
     });
-    this.socket.on("endOfTrack", (tracks: Array<object>) => {
+    this.socket.on("endOfTrack", (tracks: { [key: number]: Track }) => {
       tracksStore.setTracks(tracks);
       alert("End of the journey.");
     });

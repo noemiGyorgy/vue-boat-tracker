@@ -1,9 +1,9 @@
 <template>
   <b-list-group class="tracks mt-5 mb-5"
     ><ListItem
-      v-for="(track, index) in tracks"
-      :key="index"
-      :trackId="track.id"
+      v-for="(track, trackId) in tracks"
+      :key="trackId"
+      :trackId="trackId"
       :start="track.start"
       :live="track.live"
   /></b-list-group>
@@ -27,6 +27,7 @@ export default class TrackList extends Vue {
   @Watch("storeTracks")
   changeTracks() {
     this.tracks = tracksStore._tracks;
+    console.log(tracksStore._tracks)
   }
 }
 </script>
