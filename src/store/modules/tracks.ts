@@ -12,6 +12,10 @@ class TracksStore extends VuexModule {
   public _stopped = false;
   public _layers: { [key: string]: Vector } = {};
 
+  get stopped(): boolean {
+    return this._stopped;
+  }
+
   get vectors(): Array<Vector> {
     return Object.values(this._layers);
   }
