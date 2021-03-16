@@ -67,7 +67,6 @@ export default class MapView extends Vue {
   }
 
   createLine(oldPosition: Position, newPosition: Position) {
-    console.log(newPosition);
     const stoppedStyle = [
       new Style({
         stroke: new Stroke({

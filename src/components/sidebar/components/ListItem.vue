@@ -21,12 +21,12 @@ export default class ListItem extends Vue {
 
   handleClick() {
     if (
-      this.start in
-      Object.keys(
-        tracksStore._layers && !tracksStore._tracks[this.trackId].live
-      )
+      tracksStore._layers[this.start] !== undefined &&
+      !tracksStore._tracks[this.trackId].live
     ) {
-      tracksStore._layers[this.start].setVisible(false);
+      tracksStore._layers[this.start].setVisible(
+        !tracksStore._layers[this.start].getVisible()
+      );
     } else {
       axios
         .get(process.env.VUE_APP_SERVER + "/track/" + this.trackId, {
