@@ -43,7 +43,6 @@ class TracksStore extends VuexModule {
   @Mutation
   public setTracks(newTracks: { [key: string]: Track }): void {
     this._tracks = newTracks;
-    console.log(this._tracks);
   }
 
   @Mutation

@@ -67,6 +67,7 @@ export default class MapView extends Vue {
   }
 
   createLine(oldPosition: Position, newPosition: Position) {
+    console.log(newPosition);
     const stoppedStyle = [
       new Style({
         stroke: new Stroke({
@@ -94,7 +95,11 @@ export default class MapView extends Vue {
       name: "Line"
     });
 
-    newFeature.setStyle(tracksStore._stopped ? stoppedStyle : recordingStyle);
+    newFeature.setStyle(
+      tracksStore._stopped && tracksStore._tracks[newPosition.track_id].live
+        ? stoppedStyle
+        : recordingStyle
+    );
 
     tracksStore
       .updateLayers({
@@ -133,7 +138,6 @@ export default class MapView extends Vue {
   @Watch("storedFocus")
   changeFocus() {
     this.focus = tracksStore._focus;
-    console.log(tracksStore._recordedPositions);
 
     if (
       tracksStore._recordedPositions &&

@@ -25,7 +25,6 @@ export default class StopRecordingButton extends Vue {
   changeStatus() {
     tracksStore.setStopped(!tracksStore.stopped);
 
-    console.log(tracksStore.stopped);
     axios
       .put(process.env.VUE_APP_SERVER + "/status", {
         withCredentials: true
