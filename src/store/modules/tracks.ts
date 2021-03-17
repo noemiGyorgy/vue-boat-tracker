@@ -65,7 +65,7 @@ class TracksStore extends VuexModule {
   @Action
   public async updateRecordedPositions(track: Array<Position>): Promise<void> {
     const newRecordedPositions = Object.assign({}, this._recordedPositions);
-    newRecordedPositions[track[0].start] = track;
+    newRecordedPositions[track[0].id] = track;
     this.setRecordedPositions(newRecordedPositions);
   }
 
@@ -75,7 +75,7 @@ class TracksStore extends VuexModule {
   }): Promise<void> {
     const newLayers = Object.assign({}, this._layers);
 
-    if (newLayers[lineFeature.start] === undefined) {
+    if (newLayers[lineFeature.id] === undefined) {
       const line = new Vector({
         source: new VectorSource({
           features: [lineFeature.newFeature],
@@ -83,9 +83,9 @@ class TracksStore extends VuexModule {
         }),
         visible: true
       });
-      newLayers[lineFeature.start] = line;
+      newLayers[lineFeature.id] = line;
     } else {
-      const line = newLayers[lineFeature.start];
+      const line = newLayers[lineFeature.id];
       line
         .getSource()
         .getFeaturesCollection()
@@ -93,6 +93,13 @@ class TracksStore extends VuexModule {
     }
 
     this.setLayers(newLayers);
+  }
+
+  @Action
+  public async updateTracks(track: any): Promise<void> {
+    const newTracks = Object.assign({}, this._tracks);
+    newTracks[track.id] = track.track;
+    this.setTracks(newTracks);
   }
 }
 export const tracksStore = new TracksStore({ store, name: "tracks" });

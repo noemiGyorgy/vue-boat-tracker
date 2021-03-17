@@ -14,19 +14,25 @@ import { Prop } from "vue-property-decorator";
 
 @Component({})
 export default class ListItem extends Vue {
-  @Prop({ required: true }) trackId: number;
+  @Prop({ required: true }) trackId: string;
   @Prop({ required: true }) start: string;
   @Prop({ required: true }) live: boolean;
   private activeItem = "";
 
-  handleClick() {
+  handleClick(): void {
     if (
-      tracksStore._layers[this.start] !== undefined &&
+      tracksStore._layers[this.trackId] !== undefined &&
       !tracksStore._tracks[this.trackId].live
     ) {
-      tracksStore._layers[this.start].setVisible(
-        !tracksStore._layers[this.start].getVisible()
+      if (!tracksStore._layers[this.trackId].getVisible()) {
+        tracksStore.setFocus(this.trackId);
+      }
+      tracksStore._layers[this.trackId].setVisible(
+        !tracksStore._layers[this.trackId].getVisible()
       );
+      this.activeItem = tracksStore._layers[this.trackId].getVisible()
+        ? "text-white bg-info"
+        : "";
     } else {
       axios
         .get(process.env.VUE_APP_SERVER + "/track/" + this.trackId, {
@@ -34,7 +40,8 @@ export default class ListItem extends Vue {
         })
         .then(response => {
           tracksStore.updateRecordedPositions(response.data);
-          tracksStore.setFocus(this.start);
+          this.activeItem = "text-white bg-info";
+          tracksStore.setFocus(this.trackId);
         });
     }
   }

@@ -95,18 +95,18 @@ export default class MapView extends Vue {
     });
 
     newFeature.setStyle(
-      tracksStore._stopped && tracksStore._tracks[newPosition.track_id].live
+      tracksStore._stopped && tracksStore._tracks[newPosition.id].live
         ? stoppedStyle
         : recordingStyle
     );
 
     tracksStore
       .updateLayers({
-        start: newPosition.start,
+        id: newPosition.id,
         newFeature: newFeature
       })
       .then(() => {
-        if (this.focus === newPosition.start) {
+        if (this.focus === newPosition.id) {
           this.map
             .getView()
             .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
@@ -119,7 +119,7 @@ export default class MapView extends Vue {
     this.positions = tracksStore._positions;
     if (this.positions && this.positions.length > 1 && this.map !== undefined) {
       if (this.focus === "" || this.focus === undefined) {
-        tracksStore.setFocus(this.positions[0].start);
+        tracksStore.setFocus(this.positions[0].id);
       }
       const lastIndex = this.positions.length - 1;
       this.createLine(this.positions[lastIndex - 1], this.positions[lastIndex]);
@@ -138,7 +138,23 @@ export default class MapView extends Vue {
   changeFocus() {
     this.focus = tracksStore._focus;
 
-    if (
+    if (tracksStore._layers[this.focus] !== undefined) {
+      const recordedTrack = tracksStore._recordedPositions[this.focus];
+      const coordOld = fromLonLat([
+        recordedTrack[recordedTrack.length - 2].lon,
+        recordedTrack[recordedTrack.length - 2].lat
+      ]);
+      const coordNew = fromLonLat([
+        recordedTrack[recordedTrack.length - 1].lon,
+        recordedTrack[recordedTrack.length - 1].lat
+      ]);
+
+      const lineStr = new LineString([coordOld, coordNew]);
+      this.map
+        .getView()
+        .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
+      this.map.render();
+    } else if (
       tracksStore._recordedPositions &&
       tracksStore._recordedPositions[this.focus]
     ) {

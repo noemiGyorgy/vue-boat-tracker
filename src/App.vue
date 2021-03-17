@@ -17,7 +17,7 @@ import Position from "./interfaces/Position";
 @Component({
   components: {
     MapView,
-    Sidebar,
+    Sidebar
   }
 })
 export default class App extends Vue {
@@ -33,8 +33,14 @@ export default class App extends Vue {
     });
     this.socket.on("position", (position: Position) => {
       tracksStore.updatePositions(position);
+      if (tracksStore._tracks[position.id] === undefined) {
+        tracksStore.updateTracks({
+          id: position.id,
+          track: { start: position.start, live: true }
+        });
+      }
     });
-    this.socket.on("endOfTrack", (tracks: { [key: number]: Track }) => {
+    this.socket.on("endOfTrack", (tracks: { [key: string]: Track }) => {
       tracksStore.setTracks(tracks);
       alert("End of the journey.");
     });

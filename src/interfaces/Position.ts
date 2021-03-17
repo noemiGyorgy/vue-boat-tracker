@@ -1,5 +1,5 @@
 export default interface Position {
-  track_id: number;
+  id: string;
   lon: number;
   lat: number;
   heading: number;
