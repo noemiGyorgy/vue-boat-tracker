@@ -17,10 +17,16 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { tracksStore } from "../../../store/modules/tracks";
 import axios from "axios";
+import { Watch } from "vue-property-decorator";
 
 @Component({})
 export default class StopRecordingButton extends Vue {
-  private value = tracksStore.stopped ? "START RECORDING" : "STOP RECORDING";
+  private stopped = tracksStore._stopped;
+  private value = this.stopped ? "START RECORDING" : "STOP RECORDING";
+
+  get storedStopped() {
+    return tracksStore._stopped;
+  }
 
   changeStatus() {
     tracksStore.setStopped(!tracksStore.stopped);
@@ -30,10 +36,14 @@ export default class StopRecordingButton extends Vue {
         withCredentials: true
       })
       .then(response => {
-        this.value = response.data.stopped
-          ? "START RECORDING"
-          : "STOP RECORDING";
+        tracksStore.setStopped(response.data.stopped);
       });
+  }
+
+  @Watch("storedStopped")
+  changeStopped() {
+    this.stopped = tracksStore._stopped;
+    this.value = this.stopped ? "START RECORDING" : "STOP RECORDING";
   }
 }
 </script>
