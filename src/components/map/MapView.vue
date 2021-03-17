@@ -161,7 +161,9 @@ export default class MapView extends Vue {
       const recordedTrack = tracksStore._recordedPositions[this.focus];
       if (recordedTrack.length > 1 && this.map !== undefined) {
         for (let i = 1; i < recordedTrack.length; i++) {
-          this.createLine(recordedTrack[i - 1], recordedTrack[i]);
+          if (!recordedTrack[i].pause) {
+            this.createLine(recordedTrack[i - 1], recordedTrack[i]);
+          }
         }
       }
     }

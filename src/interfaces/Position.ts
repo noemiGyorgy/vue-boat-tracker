@@ -5,4 +5,5 @@ export default interface Position {
   heading: number;
   start: string;
   stopped: boolean;
+  pause: boolean;
 }
