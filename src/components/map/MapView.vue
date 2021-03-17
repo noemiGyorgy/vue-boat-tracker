@@ -11,10 +11,10 @@ import View from "ol/View";
 import { defaults as defaultControls, ScaleLine } from "ol/control";
 import { Tile as TileLayer, Vector } from "ol/layer";
 import { OSM } from "ol/source";
-import { tracksStore } from "../store/modules/tracks";
+import { tracksStore } from "../../store/modules/tracks";
 import { Watch } from "vue-property-decorator";
 import { fromLonLat } from "ol/proj";
-import Position from "../interfaces/Position";
+import Position from "../../interfaces/Position";
 import LineString from "ol/geom/LineString";
 import { Collection, Feature } from "ol";
 import Style from "ol/style/Style";
@@ -25,6 +25,7 @@ import LayerGroup from "ol/layer/Group";
 export default class MapView extends Vue {
   private positions: Array<Position> = tracksStore._positions;
   private trackLayers: Array<Vector> = tracksStore.vectors;
+  private focus: string = tracksStore._focus;
   private raster: TileLayer = new TileLayer({
     source: new OSM()
   });
@@ -34,12 +35,16 @@ export default class MapView extends Vue {
     return [this.raster, ...this.trackLayers];
   }
 
-  get storePositions() {
+  get storedPositions() {
     return tracksStore._positions;
   }
 
-  get storeLayers() {
+  get storedLayers() {
     return tracksStore._layers;
+  }
+
+  get storedFocus() {
+    return tracksStore._focus;
   }
 
   initiateMap() {
@@ -61,7 +66,7 @@ export default class MapView extends Vue {
     this.initiateMap();
   }
 
-  createLine(pos: Array<Position>) {
+  createLine(oldPosition: Position, newPosition: Position) {
     const stoppedStyle = [
       new Style({
         stroke: new Stroke({
@@ -80,12 +85,8 @@ export default class MapView extends Vue {
       })
     ];
 
-    const lastIndex = pos.length - 1;
-    const coordOld = fromLonLat([
-      pos[lastIndex - 1].lon,
-      pos[lastIndex - 1].lat
-    ]);
-    const coordNew = fromLonLat([pos[lastIndex].lon, pos[lastIndex].lat]);
+    const coordOld = fromLonLat([oldPosition.lon, oldPosition.lat]);
+    const coordNew = fromLonLat([newPosition.lon, newPosition.lat]);
 
     const lineStr = new LineString([coordOld, coordNew]);
     const newFeature = new Feature({
@@ -93,38 +94,79 @@ export default class MapView extends Vue {
       name: "Line"
     });
 
-    newFeature.setStyle(tracksStore._stopped ? stoppedStyle : recordingStyle);
+    newFeature.setStyle(
+      tracksStore._stopped && tracksStore._tracks[newPosition.id].live
+        ? stoppedStyle
+        : recordingStyle
+    );
 
     tracksStore
       .updateLayers({
-        start: pos[lastIndex].start,
+        id: newPosition.id,
         newFeature: newFeature
       })
       .then(() => {
-        this.map
-          .getView()
-          .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
+        if (this.focus === newPosition.id) {
+          this.map
+            .getView()
+            .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
+        }
       });
   }
 
-  @Watch("storePositions")
+  @Watch("storedPositions")
   changePositions() {
     this.positions = tracksStore._positions;
-    if (
-      this.positions.length &&
-      this.positions.length > 1 &&
-      this.map !== undefined
-    ) {
-      this.createLine(this.positions);
+    if (this.positions && this.positions.length > 1 && this.map !== undefined) {
+      if (this.focus === "" || this.focus === undefined) {
+        tracksStore.setFocus(this.positions[0].id);
+      }
+      const lastIndex = this.positions.length - 1;
+      this.createLine(this.positions[lastIndex - 1], this.positions[lastIndex]);
     }
   }
 
-  @Watch("storeLayers")
+  @Watch("storedLayers")
   changeTrackLayers() {
     this.trackLayers = tracksStore.vectors;
     this.map.setLayerGroup(
       new LayerGroup({ layers: new Collection(this.layers) })
     );
+  }
+
+  @Watch("storedFocus")
+  changeFocus() {
+    this.focus = tracksStore._focus;
+
+    if (tracksStore._layers[this.focus] !== undefined) {
+      const recordedTrack = tracksStore._recordedPositions[this.focus];
+      const coordOld = fromLonLat([
+        recordedTrack[recordedTrack.length - 2].lon,
+        recordedTrack[recordedTrack.length - 2].lat
+      ]);
+      const coordNew = fromLonLat([
+        recordedTrack[recordedTrack.length - 1].lon,
+        recordedTrack[recordedTrack.length - 1].lat
+      ]);
+
+      const lineStr = new LineString([coordOld, coordNew]);
+      this.map
+        .getView()
+        .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
+      this.map.render();
+    } else if (
+      tracksStore._recordedPositions &&
+      tracksStore._recordedPositions[this.focus]
+    ) {
+      const recordedTrack = tracksStore._recordedPositions[this.focus];
+      if (recordedTrack.length > 1 && this.map !== undefined) {
+        for (let i = 1; i < recordedTrack.length; i++) {
+          if (!recordedTrack[i].pause) {
+            this.createLine(recordedTrack[i - 1], recordedTrack[i]);
+          }
+        }
+      }
+    }
   }
 }
 </script>
