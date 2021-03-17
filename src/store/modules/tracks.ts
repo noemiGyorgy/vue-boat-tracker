@@ -23,6 +23,20 @@ class TracksStore extends VuexModule {
     return Object.values(this._layers);
   }
 
+  get sortedTracks(): Array<object> {
+    const sortedTracksList: Array<object> = [];
+    const ids = Object.keys(this._tracks).reverse();
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      sortedTracksList.push({
+        id: id,
+        start: this._tracks[id].start,
+        live: this._tracks[id].live
+      });
+    }
+    return sortedTracksList;
+  }
+
   @Mutation
   public setPositions(newPositions: Array<Position>): void {
     this._positions = newPositions;
@@ -99,6 +113,20 @@ class TracksStore extends VuexModule {
   public async updateTracks(track: any): Promise<void> {
     const newTracks = Object.assign({}, this._tracks);
     newTracks[track.id] = track.track;
+    this.setTracks(newTracks);
+  }
+
+  @Action
+  public async deleteLayer(trackId: string): Promise<void> {
+    const newLayers = Object.assign({}, this._layers);
+    delete newLayers[trackId];
+    this.setLayers(newLayers);
+  }
+
+  @Action
+  public async deleteTrack(trackId: string): Promise<void> {
+    const newTracks = Object.assign({}, this._tracks);
+    delete newTracks[trackId];
     this.setTracks(newTracks);
   }
 }

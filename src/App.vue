@@ -34,6 +34,9 @@ export default class App extends Vue {
     this.socket.on("position", (position: Position) => {
       tracksStore.updatePositions(position);
       if (tracksStore._tracks[position.id] === undefined) {
+        if (tracksStore._tracks["-1"] !== undefined && position.id !== "-1") {
+          tracksStore.deleteTrack("-1");
+        }
         tracksStore.updateTracks({
           id: position.id,
           track: { start: position.start, live: true }
@@ -43,6 +46,9 @@ export default class App extends Vue {
     this.socket.on("endOfTrack", (tracks: { [key: string]: Track }) => {
       tracksStore.setTracks(tracks);
       alert("End of the journey.");
+      if (tracksStore._layers["-1"] !== undefined) {
+        tracksStore.deleteLayer("-1");
+      }
     });
     this.socket.on("stopped", (stopped: boolean) => {
       tracksStore.setStopped(stopped);
