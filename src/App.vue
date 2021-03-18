@@ -1,28 +1,60 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <MapView />
+    <Sidebar />
   </div>
 </template>
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
+import { Socket } from "vue-socket.io-extended";
+import MapView from "./components/map/MapView.vue";
+import Sidebar from "./components/sidebar/Sidebar.vue";
+import Position from "./interfaces/Position";
+import {
+  addPosition,
+  initStore,
+  setStopped,
+  terminateLiveStreaming
+} from "./service/appService";
 
-export default {
-  name: 'App',
+@Component({
   components: {
-    HelloWorld
+    MapView,
+    Sidebar
+  }
+})
+export default class App extends Vue {
+  @Socket()
+  connection(message: any) {
+    initStore(message.tracks, message.stopped);
+  }
+
+  @Socket()
+  position(position: Position) {
+    addPosition(position);
+  }
+
+  @Socket()
+  endOfTrack(message: { [key: string]: any }) {
+    terminateLiveStreaming(message.tracks, message.finishedTrack);
+  }
+
+  @Socket()
+  stopped(stopped: boolean) {
+    setStopped(stopped);
   }
 }
 </script>
 
-<style>
+<style lang="scss">
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  height: 99%;
+  width: 99%;
 }
 </style>
