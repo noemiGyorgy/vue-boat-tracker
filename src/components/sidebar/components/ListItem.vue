@@ -6,8 +6,9 @@
 </template>
 
 <script lang="ts">
+import { getTrack } from "@/service/routes";
 import { tracksStore } from "@/store/modules/tracks";
-import axios from "axios";
+import { AxiosResponse } from "axios";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
@@ -34,15 +35,13 @@ export default class ListItem extends Vue {
         ? "text-white bg-info"
         : "";
     } else {
-      axios
-        .get(process.env.VUE_APP_SERVER + "/track/" + this.trackId, {
-          withCredentials: true
-        })
-        .then(response => {
+      if (this.trackId != "-1") {
+        getTrack(this.trackId, (response: AxiosResponse<any>) => {
           tracksStore.updateRecordedPositions(response.data);
           this.activeItem = "text-white bg-info";
           tracksStore.setFocus(this.trackId);
         });
+      }
     }
   }
 }

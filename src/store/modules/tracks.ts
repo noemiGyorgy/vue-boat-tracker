@@ -13,7 +13,7 @@ class TracksStore extends VuexModule {
   public _layers: { [key: string]: Vector } = {};
   public _tracks: { [key: string]: Track } = {};
   public _stopped = false;
-  public _focus = "";
+  public _focus = "-1";
 
   get stopped(): boolean {
     return this._stopped;
