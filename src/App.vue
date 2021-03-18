@@ -7,10 +7,15 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { tracksStore } from "./store/modules/tracks";
 import io from "socket.io-client";
 import MapView from "./components/map/MapView.vue";
 import Sidebar from "./components/sidebar/Sidebar.vue";
+import {
+  addPosition,
+  initStore,
+  setStopped,
+  terminateLiveStreaming
+} from "./service/appService";
 import Position from "./interfaces/Position";
 
 @Component({
@@ -26,52 +31,19 @@ export default class App extends Vue {
 
   recieveMessages() {
     this.socket.on("connection", (message: any) => {
-      console.log("Connected to the server.");
-      tracksStore.setTracks(message.tracks);
-      tracksStore.setStopped(message.stopped);
+      initStore(message.tracks, message.stopped);
     });
 
     this.socket.on("position", (position: Position) => {
-      tracksStore.updatePositions(position);
-      if (tracksStore._focus == "-1" && position.id != "-1") {
-        tracksStore.setFocus(position.id);
-        if (tracksStore._layers["-1"] !== undefined) {
-          const feature = tracksStore._layers["-1"]
-            .getSource()
-            .getFeatureById("boat-1");
-          tracksStore._layers["-1"].getSource().removeFeature(feature);
-        }
-      }
-      if (tracksStore._tracks[position.id] === undefined) {
-        if (tracksStore._tracks["-1"] !== undefined && position.id !== "-1") {
-          tracksStore.deleteTrack("-1");
-        }
-        tracksStore.updateTracks({
-          id: position.id,
-          track: { start: position.start, live: true }
-        });
-      }
+      addPosition(position);
     });
 
     this.socket.on("endOfTrack", (message: { [key: string]: any }) => {
-      tracksStore.setTracks(message.tracks);
-      alert("End of the journey.");
-      if (message.finishedTrack == "-1") {
-        alert(
-          "This track was not recorded, it will disappear by clicking the OK button."
-        );
-      } else {
-        const finishedTrackId = message.finishedTrack[0].id;
-        tracksStore.deleteLayer(finishedTrackId);
-        tracksStore.updateRecordedPositions(message.finishedTrack);
-        tracksStore.setFocus(finishedTrackId.toString());
-      }
-      tracksStore.deleteTrack("-1");
-      tracksStore.deleteLayer("-1");
+      terminateLiveStreaming(message.tracks, message.finishedTrack);
     });
 
     this.socket.on("stopped", (stopped: boolean) => {
-      tracksStore.setStopped(stopped);
+      setStopped(stopped);
     });
   }
   created() {
