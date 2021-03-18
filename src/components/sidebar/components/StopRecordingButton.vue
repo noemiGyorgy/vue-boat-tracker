@@ -5,7 +5,7 @@
       type="button"
       variant="outline-info"
       class="p-4 pl-5 pr-5"
-      @click="changeStatus"
+      @click="handleClick"
     >
       {{ value }}
     </b-button>
@@ -16,8 +16,9 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { tracksStore } from "../../../store/modules/tracks";
-import axios from "axios";
 import { Watch } from "vue-property-decorator";
+import { changeStatus } from "../../../service/routes";
+import { AxiosResponse } from "axios";
 
 @Component({})
 export default class StopRecordingButton extends Vue {
@@ -28,16 +29,11 @@ export default class StopRecordingButton extends Vue {
     return tracksStore._stopped;
   }
 
-  changeStatus() {
+  handleClick() {
     tracksStore.setStopped(!tracksStore.stopped);
-
-    axios
-      .put(process.env.VUE_APP_SERVER + "/status", {
-        withCredentials: true
-      })
-      .then(response => {
-        tracksStore.setStopped(response.data.stopped);
-      });
+    changeStatus((response: AxiosResponse<any>) =>
+      tracksStore.setStopped(response.data.stopped)
+    );
   }
 
   @Watch("storedStopped")

@@ -5,7 +5,6 @@ import { store } from "@/store";
 import Track from "@/interfaces/Track";
 import Position from "@/interfaces/Position";
 import VectorSource from "ol/source/Vector";
-import VectorLayer from "ol/layer/Vector";
 
 @Module
 class TracksStore extends VuexModule {
@@ -13,7 +12,6 @@ class TracksStore extends VuexModule {
   public _recordedPositions: { [key: string]: Array<Position> } = {};
   public _layers: { [key: string]: Vector } = {};
   public _tracks: { [key: string]: Track } = {};
-  public _boats: { [key: string]: VectorLayer } = {};
   public _stopped = false;
   public _focus = "-1";
 
@@ -23,10 +21,6 @@ class TracksStore extends VuexModule {
 
   get vectors(): Array<Vector> {
     return Object.values(this._layers);
-  }
-
-  get boats(): Array<VectorLayer> {
-    return Object.values(this._boats);
   }
 
   get sortedTracks(): Array<object> {
@@ -63,11 +57,6 @@ class TracksStore extends VuexModule {
   @Mutation
   public setTracks(newTracks: { [key: string]: Track }): void {
     this._tracks = newTracks;
-  }
-
-  @Mutation
-  public setBoats(newBoats: { [key: string]: VectorLayer }): void {
-    this._boats = newBoats;
   }
 
   @Mutation
@@ -125,13 +114,6 @@ class TracksStore extends VuexModule {
     const newTracks = Object.assign({}, this._tracks);
     newTracks[track.id] = track.track;
     this.setTracks(newTracks);
-  }
-
-  @Action
-  public async updateBoats(track: any): Promise<void> {
-    const newBoats = Object.assign({}, this._boats);
-    newBoats[track.id] = track.boat;
-    this.setBoats(newBoats);
   }
 
   @Action

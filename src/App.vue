@@ -11,7 +11,6 @@ import { tracksStore } from "./store/modules/tracks";
 import io from "socket.io-client";
 import MapView from "./components/map/MapView.vue";
 import Sidebar from "./components/sidebar/Sidebar.vue";
-import Track from "./interfaces/Track";
 import Position from "./interfaces/Position";
 
 @Component({
@@ -31,10 +30,17 @@ export default class App extends Vue {
       tracksStore.setTracks(message.tracks);
       tracksStore.setStopped(message.stopped);
     });
+
     this.socket.on("position", (position: Position) => {
       tracksStore.updatePositions(position);
       if (tracksStore._focus == "-1" && position.id != "-1") {
         tracksStore.setFocus(position.id);
+        if (tracksStore._layers["-1"] !== undefined) {
+          const feature = tracksStore._layers["-1"]
+            .getSource()
+            .getFeatureById("boat-1");
+          tracksStore._layers["-1"].getSource().removeFeature(feature);
+        }
       }
       if (tracksStore._tracks[position.id] === undefined) {
         if (tracksStore._tracks["-1"] !== undefined && position.id !== "-1") {
@@ -46,13 +52,24 @@ export default class App extends Vue {
         });
       }
     });
-    this.socket.on("endOfTrack", (tracks: { [key: string]: Track }) => {
-      tracksStore.setTracks(tracks);
+
+    this.socket.on("endOfTrack", (message: { [key: string]: any }) => {
+      tracksStore.setTracks(message.tracks);
       alert("End of the journey.");
-      if (tracksStore._layers["-1"] !== undefined) {
-        tracksStore.deleteLayer("-1");
+      if (message.finishedTrack == "-1") {
+        alert(
+          "This track was not recorded, it will disappear by clicking the OK button."
+        );
+      } else {
+        const finishedTrackId = message.finishedTrack[0].id;
+        tracksStore.deleteLayer(finishedTrackId);
+        tracksStore.updateRecordedPositions(message.finishedTrack);
+        tracksStore.setFocus(finishedTrackId.toString());
       }
+      tracksStore.deleteTrack("-1");
+      tracksStore.deleteLayer("-1");
     });
+
     this.socket.on("stopped", (stopped: boolean) => {
       tracksStore.setStopped(stopped);
     });
