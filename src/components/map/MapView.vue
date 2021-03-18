@@ -20,7 +20,7 @@ import { Collection, Feature } from "ol";
 import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
 import LayerGroup from "ol/layer/Group";
-import { getBoat } from "./components/boat";
+import { updateBoat } from "./components/boat";
 import VectorLayer from "ol/layer/Vector";
 
 @Component({})
@@ -92,6 +92,8 @@ export default class MapView extends Vue {
       })
     ];
 
+    updateBoat(newPosition);
+
     const coordOld = fromLonLat([oldPosition.lon, oldPosition.lat]);
     const coordNew = fromLonLat([newPosition.lon, newPosition.lat]);
 
@@ -106,15 +108,6 @@ export default class MapView extends Vue {
         ? stoppedStyle
         : recordingStyle
     );
-
-    const boat = getBoat(coordNew, newPosition.heading);
-
-    tracksStore.updateBoats({
-      id: newPosition.id,
-      boat: boat
-    });
-
-    this.map.addLayer(boat);
 
     if (this.focus == newPosition.id) {
       this.map
@@ -176,7 +169,10 @@ export default class MapView extends Vue {
         if (recordedTrack.length > 1 && this.map !== undefined) {
           for (let i = 1; i < recordedTrack.length; i++) {
             if (!recordedTrack[i].pause) {
-              this.createLine(recordedTrack[i - 1], recordedTrack[i]);
+              const delay = 100;
+              setTimeout(() => {
+                this.createLine(recordedTrack[i - 1], recordedTrack[i]);
+              }, delay * i);
             }
           }
         }

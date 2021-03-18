@@ -1,34 +1,48 @@
 import { Style, RegularShape, Fill, Stroke } from "ol/style";
 import Feature from "ol/Feature";
 import { Point } from "ol/geom";
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import { Coordinate } from "ol/coordinate";
+import { tracksStore } from "../../../store/modules/tracks";
+import Position from "@/interfaces/Position";
+import { fromLonLat } from "ol/proj";
 
-const getTriangle = (heading: number) => {
+const getTriangle = (heading: number, live: boolean) => {
   return new Style({
     image: new RegularShape({
       fill: new Fill({ color: "red" }),
-      stroke: new Stroke({ color: "black", width: 2 }),
+      stroke: live ? new Stroke({ color: "black", width: 2 }) : undefined,
       points: 3,
-      radius: 10,
+      radius: live ? 10 : 8,
       rotation: heading,
       angle: 0
     })
   });
 };
 
-export const getBoat = (coordinate: Coordinate, heading: number) => {
-  const triangle = getTriangle(heading);
+export const updateBoat = (position: Position) => {
+  let boat = tracksStore._layers[position.id]
+    ? tracksStore._layers[position.id]
+        .getSource()
+        .getFeatureById("boat" + position.id)
+    : undefined;
 
-  const newFeature = new Feature({
-    geometry: new Point(coordinate)
-  });
-  newFeature.setStyle(triangle);
+  const point = new Point(fromLonLat([position.lon, position.lat]));
 
-  return new VectorLayer({
-    source: new VectorSource({
-      features: [newFeature]
-    })
-  });
+  if (boat == null || boat === undefined) {
+    boat = new Feature({
+      geometry: point
+    });
+    boat.setId("boat" + position.id);
+    tracksStore.updateLayers({
+      id: position.id,
+      newFeature: boat
+    });
+  } else {
+    boat.setGeometry(point);
+  }
+
+  const triangle = getTriangle(
+    position.heading,
+    tracksStore._tracks[position.id].live
+  );
+  boat.setStyle(triangle);
 };
