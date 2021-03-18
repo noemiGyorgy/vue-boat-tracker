@@ -20,11 +20,14 @@ import { Collection, Feature } from "ol";
 import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
 import LayerGroup from "ol/layer/Group";
+import { getBoat } from "./components/boat";
+import VectorLayer from "ol/layer/Vector";
 
 @Component({})
 export default class MapView extends Vue {
   private positions: Array<Position> = tracksStore._positions;
   private trackLayers: Array<Vector> = tracksStore.vectors;
+  private boats: Array<VectorLayer> = tracksStore.boats;
   private focus: string = tracksStore._focus;
   private raster: TileLayer = new TileLayer({
     source: new OSM()
@@ -32,7 +35,7 @@ export default class MapView extends Vue {
   private map: Map;
 
   get layers() {
-    return [this.raster, ...this.trackLayers];
+    return [this.raster, ...this.trackLayers, ...this.boats];
   }
 
   get storedPositions() {
@@ -41,6 +44,10 @@ export default class MapView extends Vue {
 
   get storedLayers() {
     return tracksStore._layers;
+  }
+
+  get storedBoats() {
+    return tracksStore._boats;
   }
 
   get storedFocus() {
@@ -100,25 +107,32 @@ export default class MapView extends Vue {
         : recordingStyle
     );
 
-    tracksStore
-      .updateLayers({
-        id: newPosition.id,
-        newFeature: newFeature
-      })
-      .then(() => {
-        if (this.focus === newPosition.id) {
-          this.map
-            .getView()
-            .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
-        }
-      });
+    const boat = getBoat(coordNew, newPosition.heading);
+
+    tracksStore.updateBoats({
+      id: newPosition.id,
+      boat: boat
+    });
+
+    this.map.addLayer(boat);
+
+    if (this.focus == newPosition.id) {
+      this.map
+        .getView()
+        .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
+    }
+
+    tracksStore.updateLayers({
+      id: newPosition.id,
+      newFeature: newFeature
+    });
   }
 
   @Watch("storedPositions")
   changePositions() {
     this.positions = tracksStore._positions;
     if (this.positions && this.positions.length > 1 && this.map !== undefined) {
-      if (this.focus === "" || this.focus === undefined) {
+      if (this.focus === "-1" || this.focus === undefined) {
         tracksStore.setFocus(this.positions[0].id);
       }
       const lastIndex = this.positions.length - 1;
@@ -137,32 +151,33 @@ export default class MapView extends Vue {
   @Watch("storedFocus")
   changeFocus() {
     this.focus = tracksStore._focus;
-
-    if (tracksStore._layers[this.focus] !== undefined) {
-      const recordedTrack = tracksStore._recordedPositions[this.focus];
-      const coordOld = fromLonLat([
-        recordedTrack[recordedTrack.length - 2].lon,
-        recordedTrack[recordedTrack.length - 2].lat
-      ]);
-      const coordNew = fromLonLat([
-        recordedTrack[recordedTrack.length - 1].lon,
-        recordedTrack[recordedTrack.length - 1].lat
-      ]);
-
-      const lineStr = new LineString([coordOld, coordNew]);
-      this.map
-        .getView()
-        .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
-      this.map.render();
-    } else if (
+    if (
       tracksStore._recordedPositions &&
       tracksStore._recordedPositions[this.focus]
     ) {
-      const recordedTrack = tracksStore._recordedPositions[this.focus];
-      if (recordedTrack.length > 1 && this.map !== undefined) {
-        for (let i = 1; i < recordedTrack.length; i++) {
-          if (!recordedTrack[i].pause) {
-            this.createLine(recordedTrack[i - 1], recordedTrack[i]);
+      if (tracksStore._layers[this.focus] !== undefined) {
+        const recordedTrack = tracksStore._recordedPositions[this.focus];
+        const coordOld = fromLonLat([
+          recordedTrack[recordedTrack.length - 2].lon,
+          recordedTrack[recordedTrack.length - 2].lat
+        ]);
+        const coordNew = fromLonLat([
+          recordedTrack[recordedTrack.length - 1].lon,
+          recordedTrack[recordedTrack.length - 1].lat
+        ]);
+
+        const lineStr = new LineString([coordOld, coordNew]);
+        this.map
+          .getView()
+          .fit(lineStr, { padding: [170, 50, 30, 150], maxZoom: 17 });
+        this.map.render();
+      } else {
+        const recordedTrack = tracksStore._recordedPositions[this.focus];
+        if (recordedTrack.length > 1 && this.map !== undefined) {
+          for (let i = 1; i < recordedTrack.length; i++) {
+            if (!recordedTrack[i].pause) {
+              this.createLine(recordedTrack[i - 1], recordedTrack[i]);
+            }
           }
         }
       }

@@ -33,6 +33,9 @@ export default class App extends Vue {
     });
     this.socket.on("position", (position: Position) => {
       tracksStore.updatePositions(position);
+      if (tracksStore._focus == "-1" && position.id != "-1") {
+        tracksStore.setFocus(position.id);
+      }
       if (tracksStore._tracks[position.id] === undefined) {
         if (tracksStore._tracks["-1"] !== undefined && position.id !== "-1") {
           tracksStore.deleteTrack("-1");
