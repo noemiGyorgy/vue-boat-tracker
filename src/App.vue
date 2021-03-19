@@ -27,7 +27,8 @@ import {
 export default class App extends Vue {
   @Socket()
   connection(message: any) {
-    initStore(message.tracks, message.stopped);
+    initStore(message.tracks, message.stopped, message.liveTrack);
+    console.log(message.tracks);
   }
 
   @Socket()

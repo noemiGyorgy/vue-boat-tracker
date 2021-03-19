@@ -6,11 +6,15 @@ const unrecordedTrackId = process.env.VUE_APP_UNRECORDED_TRACK_ID || "-1";
 
 export const initStore = (
   tracks: { [key: string]: Track },
-  stopped: boolean
+  stopped: boolean,
+  liveTrack: Array<Position> | undefined
 ) => {
   console.log("Connected to the server.");
   tracksStore.setTracks(tracks);
   tracksStore.setStopped(stopped);
+  if (liveTrack) {
+    tracksStore.updateRecordedPositions(liveTrack);
+  }
 };
 
 const switchToRecordedTrack = (position: Position) => {
